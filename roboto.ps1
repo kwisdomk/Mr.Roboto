@@ -1,4 +1,4 @@
-﻿#Requires -Version 5.1
+#Requires -Version 5.1
 <#
 .SYNOPSIS
     Mr. Roboto v2.0 - Autonomous Media Acquisition Agent
@@ -39,7 +39,7 @@ param(
     [Parameter(Mandatory = $false)][switch]$OfflineMode
 )
 
-# ── Force TLS 1.2 (TLS 1.3 enum absent on PS5.1/.NET 4.x — bug #6 fixed) ──
+#  Force TLS 1.2 (TLS 1.3 enum absent on PS5.1/.NET 4.x - bug #6 fixed) 
 try {
     [Net.ServicePointManager]::SecurityProtocol =
     [Net.SecurityProtocolType]::Tls12 -bor
@@ -50,9 +50,9 @@ try {
     [Net.ServicePointManager]::SecurityProtocol =
     [Net.ServicePointManager]::SecurityProtocol -bor $tls13
 }
-catch { <# Tls13 not available on this runtime — harmless #> }
+catch { <# Tls13 not available on this runtime - harmless #> }
 
-# ── Script-level state ──────────────────────────────────────────────────────
+#  Script-level state 
 $script:Version = "2.0.0"
 $script:ScriptRoot = $PSScriptRoot
 $script:ConfigPath = Join-Path $ScriptRoot "config.json"
@@ -61,13 +61,14 @@ $script:LogFile = $null
 $script:Config = $null
 $script:Hardware = $null   # cached once; Show-Banner reuses this
 $script:DownloadDir = $null   # set once per session via Select-DownloadLocation
+$script:CookieBackend = $null  # auto-detected browser for --cookies-from-browser
 
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 #region  ANIMATIONS
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 
 function Show-Typewriter {
-    <# Prints $Text one character at a time. Lightweight — no threads. #>
+    <# Prints $Text one character at a time. Lightweight - no threads. #>
     param([string]$Text, [int]$DelayMs = 18, [string]$Color = 'Green')
     foreach ($ch in $Text.ToCharArray()) {
         Write-Host $ch -NoNewline -ForegroundColor $Color
@@ -79,7 +80,7 @@ function Show-Typewriter {
 function Show-Spinner {
     <#
     Displays a braille spinner beside $Message for $Seconds seconds.
-    Single-threaded — uses carriage-return overwrite. Safe, no jobs.
+    Single-threaded - uses carriage-return overwrite. Safe, no jobs.
     #>
     param([string]$Message = 'Working...', [int]$Seconds = 2)
     $frames = [char[]]@([char]0x280B, [char]0x2819, [char]0x2839, [char]0x2838,
@@ -92,14 +93,14 @@ function Show-Spinner {
         Start-Sleep -Milliseconds 80
         $i++
     }
-    Write-Host "`r  ✔ $Message" -ForegroundColor Green
+    Write-Host "`r  [OK] $Message" -ForegroundColor Green
 }
 
 #endregion
 
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 #region  LOGGING
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 
 function Write-Log {
     param(
@@ -140,9 +141,9 @@ function Initialize-Logging {
 
 #endregion
 
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 #region  ENVIRONMENT INIT
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 
 function Initialize-Config {
     $defaultConfig = [ordered]@{
@@ -177,7 +178,7 @@ function Initialize-Config {
                 audioCodec  = "aac"
                 description = "720p MP4 (smaller size)"
             }
-            # ── Audio-only profiles ──────────────────────────────────────
+            #  Audio-only profiles 
             # YouTube sources are lossy (Opus/AAC). These profiles give you
             # the best possible extraction at each fidelity/size trade-off.
             "audio-flac" = [ordered]@{
@@ -247,16 +248,15 @@ function Initialize-Environment {
     Initialize-Logging
     Write-Log "INFO" "Environment ready."
 
-    if (-not $script:Config.settings.PSObject.Properties['browserCookies']) {
-        Set-BrowserCookies
-    }
+    # Auto-detect browser for cookie auth (silent, no prompt)
+    $script:CookieBackend = Get-CookieBackend
 }
 
 #endregion
 
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 #region  HARDWARE DETECTION
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 
 function Get-HardwareCapabilities {
     Write-Log "INFO" "Detecting hardware..."
@@ -277,7 +277,7 @@ function Get-HardwareCapabilities {
             elseif ($gpuName -match "AMD|Radeon|RX ") { "h264_amf" }
             elseif ($gpuName -match "Intel|HD Graphics|UHD|Iris") { "h264_qsv" }
             else { "libx264" }
-            Write-Log "INFO" "GPU: $gpuName → Encoder: $encoder"
+            Write-Log "INFO" "GPU: $gpuName  Encoder: $encoder"
         }
         else {
             $gpuName = "None (Software)"
@@ -296,9 +296,9 @@ function Get-HardwareCapabilities {
 
 #endregion
 
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 #region  BINARY MANAGEMENT
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 
 function Find-Binary {
     param([Parameter(Mandatory)][string]$Name)
@@ -361,7 +361,7 @@ function Install-Binary {
         if ($Name -eq 'yt-dlp') {
             $dest = Join-Path $binDir "yt-dlp.exe"
             Invoke-WebRequest -Uri $url -OutFile $dest -UseBasicParsing
-            Write-Log "INFO" "yt-dlp installed → $dest"
+            Write-Log "INFO" "yt-dlp installed  $dest"
         }
         else {
             # FFmpeg arrives as a zip; BtbN layout: ffmpeg-master-*/bin/{ffmpeg,ffprobe}.exe
@@ -385,7 +385,7 @@ function Install-Binary {
                 $src = Join-Path $ffBinDir $exe
                 if (Test-Path $src) {
                     Copy-Item $src $binDir -Force
-                    Write-Log "INFO" "$exe installed → $binDir"
+                    Write-Log "INFO" "$exe installed  $binDir"
                 }
             }
 
@@ -402,7 +402,7 @@ function Install-Binary {
 
 function Install-Dependencies {
     if ($OfflineMode) {
-        Write-Log "WARN" "Offline mode — skipping dependency check."
+        Write-Log "WARN" "Offline mode - skipping dependency check."
         return
     }
 
@@ -423,9 +423,9 @@ function Install-Dependencies {
 
 #endregion
 
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 #region  BANNER
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 
 function Show-Banner {
     # Bug #9 fixed: reuse $script:Hardware; do NOT call Get-HardwareCapabilities again
@@ -439,13 +439,13 @@ function Show-Banner {
     # Bug #10 fixed: actual version strings shown
     $c = 'Cyan'; $w = 'White'; $y = 'Yellow'
     Write-Host ""
-    Write-Host "  ╔═══════════════════════════════════════════════════════╗" -ForegroundColor $c
-    Write-Host "  ║          M R .  R O B O T O  v$($script:Version)               ║" -ForegroundColor $c
-    Write-Host "  ║      Autonomous Media Acquisition Agent               ║" -ForegroundColor $c
-    Write-Host "  ╚═══════════════════════════════════════════════════════╝" -ForegroundColor $c
+    Write-Host "  +=========================================================+" -ForegroundColor $c
+    Write-Host "  |          M R .  R O B O T O  v$($script:Version)               |" -ForegroundColor $c
+    Write-Host "  |      Autonomous Media Acquisition Agent               |" -ForegroundColor $c
+    Write-Host "  +=========================================================+" -ForegroundColor $c
     Write-Host ""
     Write-Host "  System Information" -ForegroundColor $y
-    Write-Host "  ─────────────────────────────────────────────────────────" -ForegroundColor DarkGray
+    Write-Host "  -----------------------------------------------------------" -ForegroundColor DarkGray
     Write-Host ("  GPU      : {0}" -f $hw.GPU)           -ForegroundColor $w
     Write-Host ("  Encoder  : {0}" -f $hw.Encoder)       -ForegroundColor $w
     Write-Host ("  Arch     : {0}" -f $hw.Architecture)  -ForegroundColor $w
@@ -453,8 +453,11 @@ function Show-Banner {
     Write-Host ("  FFmpeg   : {0}" -f $ffVer)            -ForegroundColor $w
     $mode = if ($Url) { 'Direct' } else { 'Interactive' }
     Write-Host ("  Mode     : {0}" -f $mode) -ForegroundColor $w
+    if ($script:CookieBackend) {
+        Write-Host ("  Cookies  : {0}" -f $script:CookieBackend) -ForegroundColor $w
+    }
     Write-Host ""
-    Write-Host "  ──────────────────────────────────────────────────────────" -ForegroundColor DarkGray
+    Write-Host "  -----------------------------------------------------------" -ForegroundColor DarkGray
     Write-Host -NoNewline '  '
     Show-Typewriter -Text 'Ready to acquire media.' -DelayMs 22 -Color 'Green'
     Write-Host ''
@@ -462,16 +465,16 @@ function Show-Banner {
 
 #endregion
 
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 #region  STATE / RESUME
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 
 function Save-DownloadState {
     param([hashtable]$Data)
     $statePath = Join-Path $script:ScriptRoot "state/session.json"
     try {
         $Data | ConvertTo-Json -Depth 5 | Set-Content $statePath -Encoding UTF8
-        Write-Log "DEBUG" "State saved → $statePath"
+        Write-Log "DEBUG" "State saved  $statePath"
     }
     catch {
         Write-Log "WARN" "Could not save state: $($_.Exception.Message)"
@@ -497,9 +500,9 @@ function Clear-DownloadState {
 
 #endregion
 
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 #region  URL VALIDATION
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 
 function Test-MediaUrl {
     param([string]$Url)
@@ -514,9 +517,9 @@ function Test-MediaUrl {
 
 #endregion
 
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 #region  DOWNLOAD ORCHESTRATION
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 
 function Start-MediaAcquisition {
     param(
@@ -525,7 +528,7 @@ function Start-MediaAcquisition {
         [Parameter(Mandatory)][string]$QualityProfile
     )
 
-    Write-Log "INFO" "Acquisition started — URL: $TargetUrl  Profile: $QualityProfile"
+    Write-Log "INFO" "Acquisition started - URL: $TargetUrl  Profile: $QualityProfile"
 
     $ytdlpPath = Find-Binary 'yt-dlp'
     $ffmpegPath = Find-Binary 'ffmpeg'
@@ -563,10 +566,9 @@ function Start-MediaAcquisition {
         '--newline'
     )
 
-    $cookieBrowser = $script:Config.settings.PSObject.Properties['browserCookies']
-    if ($cookieBrowser -and $cookieBrowser.Value -ne 'none') {
+    if ($script:CookieBackend) {
         $ytArgs.Add('--cookies-from-browser')
-        $ytArgs.Add($cookieBrowser.Value)
+        $ytArgs.Add($script:CookieBackend)
     }
 
     if ($isAudioOnly) {
@@ -589,8 +591,59 @@ function Start-MediaAcquisition {
         }
     }
 
+    # Media enrichment - thumbnails and metadata (all profiles)
+    $ytArgs.AddRange([string[]]@(
+        '--embed-thumbnail',
+        '--embed-metadata',
+        '--add-metadata',
+        '--convert-thumbnails', 'jpg'
+    ))
+
+    # Playlist interceptor - default to single video, prompt only when needed
+    $playlistFlag = '--no-playlist'
+    if ($TargetUrl -match 'list=') {
+        Write-Host ""
+        Write-Host "  WARNING: Playlist detected in URL." -ForegroundColor Yellow
+        Write-Host "  Generating preview..." -ForegroundColor DarkGray
+
+        $peekArgs = @(
+            "--flat-playlist",
+            "--playlist-end", "5",
+            "--print", "%(playlist_index)s: %(title)s",
+            $TargetUrl
+        )
+        try {
+            $peek = & $ytdlpPath @peekArgs 2>$null
+            if ($peek) {
+                Write-Host ""
+                Write-Host "  Playlist preview (first 5):" -ForegroundColor Cyan
+                $peek | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
+            }
+        }
+        catch {
+            Write-Host "  Preview unavailable." -ForegroundColor DarkGray
+        }
+
+        Write-Host ""
+        Write-Host "  [1] Single video (recommended)" -ForegroundColor Green
+        Write-Host "  [2] Full playlist" -ForegroundColor Yellow
+        Write-Host ""
+        $plChoice = (Read-Host "  Choice [1]").Trim()
+        if ($plChoice -eq '2') {
+            $playlistFlag = '--yes-playlist'
+            Write-Log "INFO" "Playlist mode enabled by user."
+            Write-Host "  Playlist mode enabled." -ForegroundColor Cyan
+        }
+        else {
+            Write-Log "INFO" "Single video mode enforced (playlist URL)."
+            Write-Host "  Single video mode enforced." -ForegroundColor Cyan
+        }
+        Write-Host ""
+    }
+    $ytArgs.Add($playlistFlag)
+
     Write-Host ''
-    Write-Host "  ▶ Downloading..." -ForegroundColor Green
+    Write-Host "  - Downloading..." -ForegroundColor Green
     Write-Host "    Profile  : $QualityProfile ($($prof.description))" -ForegroundColor DarkGray
     Write-Host "    Output   : $downloadDir" -ForegroundColor DarkGray
     Write-Host ''
@@ -600,80 +653,60 @@ function Start-MediaAcquisition {
         if ($LASTEXITCODE -ne 0) { throw "yt-dlp exited with code $LASTEXITCODE" }
         Write-Log "INFO" "Download completed successfully."
         Write-Host ""
-        Write-Host "  ✔ Download complete!" -ForegroundColor Green
+        Write-Host "   Download complete!" -ForegroundColor Green
         Clear-DownloadState
     }
     catch {
         Write-Log "ERROR" "Download failed: $($_.Exception.Message)"
         # State file left intact so the user can resume
         Write-Host ""
-        Write-Host "  ✘ Download failed. State saved for resume. Check logs for details." -ForegroundColor Red
+        Write-Host "   Download failed. State saved for resume. Check logs for details." -ForegroundColor Red
     }
 }
 
 #endregion
 
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 #region  BROWSER COOKIES
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 
-function Get-InstalledBrowsers {
-    $browsers = [ordered]@{
-        'chrome'   = "$env:LOCALAPPDATA\Google\Chrome\User Data"
-        'firefox'  = "$env:APPDATA\Mozilla\Firefox\Profiles"
-        'edge'     = "$env:LOCALAPPDATA\Microsoft\Edge\User Data"
-        'brave'    = "$env:LOCALAPPDATA\BraveSoftware\Brave-Browser\User Data"
-        'vivaldi'  = "$env:LOCALAPPDATA\Vivaldi\User Data"
-        'opera'    = "$env:APPDATA\Opera Software\Opera Stable"
-        'chromium' = "$env:LOCALAPPDATA\Chromium\User Data"
-    }
-    $found = @()
-    foreach ($name in $browsers.Keys) {
-        if (Test-Path $browsers[$name]) {
-            $found += $name
+function Get-CookieBackend {
+    <#
+    Silent priority-ordered browser detection.
+    Returns the yt-dlp browser identifier string for the first installed
+    browser found, or $null if none detected. No user prompt.
+    #>
+    $browsers = @(
+        @{ Name = 'edge';     Path = "$env:LOCALAPPDATA\Microsoft\Edge\User Data" }
+        @{ Name = 'chrome';   Path = "$env:LOCALAPPDATA\Google\Chrome\User Data" }
+        @{ Name = 'brave';    Path = "$env:LOCALAPPDATA\BraveSoftware\Brave-Browser\User Data" }
+        @{ Name = 'firefox';  Path = "$env:APPDATA\Mozilla\Firefox\Profiles" }
+        @{ Name = 'vivaldi';  Path = "$env:LOCALAPPDATA\Vivaldi\User Data" }
+        @{ Name = 'opera';    Path = "$env:APPDATA\Opera Software\Opera Stable" }
+        @{ Name = 'chromium'; Path = "$env:LOCALAPPDATA\Chromium\User Data" }
+    )
+
+    foreach ($b in $browsers) {
+        if (Test-Path $b.Path) {
+            Write-Log "DEBUG" "Auto-detected browser for cookies: $($b.Name)"
+            return $b.Name
         }
     }
-    return $found
-}
 
-function Set-BrowserCookies {
-    $available = Get-InstalledBrowsers
-    if ($available.Count -eq 0) {
-        Write-Log "WARN" "No supported browsers detected. Skipping cookie setup."
-        return
-    }
-    Write-Host ""
-    Write-Host "  YouTube requires browser cookies to avoid bot detection." -ForegroundColor Yellow
-    Write-Host "  Select your browser:"
-    Write-Host ""
-    for ($i = 0; $i -lt $available.Count; $i++) {
-        Write-Host "  [$($i + 1)] $($available[$i])"
-    }
-    Write-Host "  [S] Skip"
-    Write-Host ""
-    $choice = (Read-Host "  Choice").Trim()
-    if ($choice -match '^\d+$' -and [int]$choice -ge 1 -and [int]$choice -le $available.Count) {
-        $selected = $available[[int]$choice - 1]
-        $script:Config.settings | Add-Member -NotePropertyName 'browserCookies' -NotePropertyValue $selected -Force
-        $script:Config | ConvertTo-Json -Depth 10 | Set-Content "$PSScriptRoot\config.json" -Encoding UTF8
-        Write-Log "INFO" "Browser cookies set: $selected"
-        Write-Host "  Cookie source set to: $selected" -ForegroundColor Green
-    }
-    else {
-        Write-Log "INFO" "Cookie setup skipped."
-    }
+    Write-Log "WARN" "No supported browser detected for cookie extraction."
+    return $null
 }
 
 #endregion
 
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 #region  DOWNLOAD LOCATION
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 
 function Select-DownloadLocation {
     <#
     Determines where downloaded files will land.
-    Audio profiles → OS Music folder; video profiles → OS Videos folder.
+    Audio profiles  OS Music folder; video profiles  OS Videos folder.
     User can override with a custom path at the prompt.
     Sets $script:DownloadDir which Start-MediaAcquisition reads.
     #>
@@ -709,7 +742,7 @@ function Select-DownloadLocation {
             Write-Log 'INFO' "Created download directory: $nativeDir"
         }
         catch {
-            Write-Log 'WARN' "Could not create '$nativeDir' — falling back to local downloads folder."
+            Write-Log 'WARN' "Could not create '$nativeDir' - falling back to local downloads folder."
             $nativeDir = Join-Path $script:ScriptRoot 'downloads'
         }
     }
@@ -720,16 +753,16 @@ function Select-DownloadLocation {
 
 #endregion
 
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 #region  INTERACTIVE MODE
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 
 function Start-InteractiveMode {
     # Check for interrupted session
     $state = Get-DownloadState
     if ($state -and $state.status -eq "in_progress") {
         Write-Host ""
-        Write-Host "  ⚠ Interrupted download detected:" -ForegroundColor Yellow
+        Write-Host "   Interrupted download detected:" -ForegroundColor Yellow
         Write-Host "    URL     : $($state.url)" -ForegroundColor White
         Write-Host "    Profile : $($state.profile)" -ForegroundColor White
         $ans = Read-Host "  Resume this download? [Y/N]"
@@ -743,21 +776,21 @@ function Start-InteractiveMode {
 
     while ($true) {
         Write-Host ""
-        Write-Host "  ┌─────────────────────────────────────────────────────────┐" -ForegroundColor DarkGray
-        Write-Host "  │  Mr. Roboto — Acquisition Mode                          │" -ForegroundColor Cyan
-        Write-Host "  ├─────────────────────────────────────────────────────────┤" -ForegroundColor DarkGray
-        Write-Host "  │  VIDEO                                                  │" -ForegroundColor DarkGray
-        Write-Host "  │  [1] Ultra   4K MKV     (maximum quality)               │" -ForegroundColor White
-        Write-Host "  │  [2] High    1080p MP4  (recommended)                   │" -ForegroundColor Green
-        Write-Host "  │  [3] Mobile  720p MP4   (compact, portable)             │" -ForegroundColor Yellow
-        Write-Host "  ├─────────────────────────────────────────────────────────┤" -ForegroundColor DarkGray
-        Write-Host "  │  AUDIO ONLY                                             │" -ForegroundColor DarkGray
-        Write-Host "  │  [4] FLAC    Lossless archive  (archival grade)          │" -ForegroundColor Magenta
-        Write-Host "  │  [5] Opus    Hi-Fi native      (bit-perfect, smallest)  │" -ForegroundColor Cyan
-        Write-Host "  │  [6] MP3     320 kbps          (universal compatibility) │" -ForegroundColor Blue
-        Write-Host "  ├─────────────────────────────────────────────────────────┤" -ForegroundColor DarkGray
-        Write-Host "  │  [Q] Quit                                               │" -ForegroundColor Red
-        Write-Host "  └─────────────────────────────────────────────────────────┘" -ForegroundColor DarkGray
+        Write-Host "  +-----------------------------------------------------------+" -ForegroundColor DarkGray
+        Write-Host "  |  Mr. Roboto - Acquisition Mode                          |" -ForegroundColor Cyan
+        Write-Host "  +-----------------------------------------------------------+" -ForegroundColor DarkGray
+        Write-Host "  |  VIDEO                                                  |" -ForegroundColor DarkGray
+        Write-Host "  |  [1] Ultra   4K MKV     (maximum quality)               |" -ForegroundColor White
+        Write-Host "  |  [2] High    1080p MP4  (recommended)                   |" -ForegroundColor Green
+        Write-Host "  |  [3] Mobile  720p MP4   (compact, portable)             |" -ForegroundColor Yellow
+        Write-Host "  +-----------------------------------------------------------+" -ForegroundColor DarkGray
+        Write-Host "  |  AUDIO ONLY                                             |" -ForegroundColor DarkGray
+        Write-Host "  |  [4] FLAC    Lossless archive  (archival grade)          |" -ForegroundColor Magenta
+        Write-Host "  |  [5] Opus    Hi-Fi native      (bit-perfect, smallest)  |" -ForegroundColor Cyan
+        Write-Host "  |  [6] MP3     320 kbps          (universal compatibility) |" -ForegroundColor Blue
+        Write-Host "  +-----------------------------------------------------------+" -ForegroundColor DarkGray
+        Write-Host "  |  [Q] Quit                                               |" -ForegroundColor Red
+        Write-Host "  +-----------------------------------------------------------+" -ForegroundColor DarkGray
         Write-Host ""
 
         $choice = (Read-Host "  Choice").Trim().ToUpper()
@@ -777,7 +810,7 @@ function Start-InteractiveMode {
             'P' { 'audio-mp3' }
             'Q' { Write-Host "  Goodbye.`n" -ForegroundColor Cyan; return }
             default {
-                Write-Host "  Invalid choice — try again." -ForegroundColor Red
+                Write-Host "  Invalid choice - try again." -ForegroundColor Red
                 $null
             }
         }
@@ -807,9 +840,9 @@ function Start-InteractiveMode {
 
 #endregion
 
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 #region  MAIN ENTRY POINT
-# ══════════════════════════════════════════════════════════════════════════════
+# 
 
 function Main {
     try {
