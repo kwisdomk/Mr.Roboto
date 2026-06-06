@@ -26,14 +26,18 @@
 - Error handling and recovery
 - Resume capability
 
-✅ **Linux Support**
-- `roboto.sh` launcher (requires `pwsh` / PowerShell 7+)
-- Cross-platform binary management (`bin/x64/` — no `.exe` on Linux)
-- `linux-x64` and `linux-arm64` download URLs in config
-- Linux GPU detection via `nvidia-smi` and `lspci`
-- AMD encoder mapped to `h264_vaapi` on Linux (VA-API standard)
+✅ **Linux Support (Native Bash)**
+- `roboto.sh` is a **full standalone implementation** — PowerShell is NOT required
+- Pure bash with zero extra dependencies (needs only `bash`, `curl`/`wget`, `tar`)
+- Auto-downloads yt-dlp and FFmpeg on first run, same as the Windows launcher
+- GPU detection via `nvidia-smi` and `lspci`; AMD encoder mapped to `h264_vaapi`
 - XDG-aware download directories (`~/Music`, `~/Videos`)
-- Browser cookie auth detects Firefox/Chrome/Chromium on Linux
+- Browser cookie auth detects Firefox/Chrome/Chromium/Brave/Vivaldi/Opera
+- Resume capability with state saved to `state/session.json`
+- Download history stored in `state/download_history.json`
+- ARM64 support (`bin/arm64/`) with correct yt-dlp and FFmpeg arm64 binaries
+- Direct / headless mode: `./roboto.sh <url> [profile]`
+- `roboto.ps1` remains the Windows entry point (unchanged)
 
 ✅ **Bug Fixes & Runtime Improvements**
 - **Resume missing output path** — `downloadDir` is now saved to session state and restored on resume; previously the output path was empty, causing yt-dlp to write to `/` and fail with permission denied
@@ -271,11 +275,13 @@
 
 **Linux**
 - Any modern x86_64 or arm64 distribution
-- PowerShell 7+ (`pwsh`)
+- `bash` 4.2+ (pre-installed everywhere)
+- `curl` or `wget` (pre-installed on most distros)
 - `tar` (pre-installed everywhere)
 - 500MB free disk space (for binaries)
 - Internet connection (for first run and downloads)
 - Optional: `pciutils` (for AMD/Intel GPU detection via `lspci`)
+- Optional: `python3` (for JSON state parsing; grep fallback used otherwise)
 
 ### Optional Dependencies
 - **BurntToast** - Windows notifications (Phase 4)

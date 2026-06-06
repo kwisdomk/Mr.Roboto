@@ -2,7 +2,7 @@
 
 **The Autonomous Media Acquisition & Archival Agent**
 
-A portable, self-healing PowerShell automation suite for high-fidelity media acquisition, transformation, and archival.
+A portable, self-healing media acquisition suite for high-fidelity download, transformation, and archival. Runs natively on Windows (PowerShell) and Linux (pure Bash — no PowerShell required).
 
 ---
 
@@ -37,11 +37,13 @@ A portable, self-healing PowerShell automation suite for high-fidelity media acq
 - Internet connection (for first run)
 
 **Linux**
-- PowerShell 7+ (`pwsh`) — [install guide](https://aka.ms/install-powershell)
-- `tar` (pre-installed on all major distros)
+- `bash` 4.2+ (pre-installed everywhere)
+- `curl` or `wget` (pre-installed on most distros)
+- `tar` (pre-installed everywhere)
 - Internet connection (for first run)
-- Optional: `lspci` (GPU detection on non-NVIDIA systems) — `sudo apt install pciutils`
+- Optional: `lspci` (GPU detection for AMD/Intel) — `sudo apt install pciutils`
 - Optional: `nvidia-smi` (NVIDIA GPU detection) — install via your NVIDIA driver package
+- Optional: `python3` (used for JSON state parsing; grep fallback used if absent)
 
 ### Installation
 
@@ -63,7 +65,9 @@ A portable, self-healing PowerShell automation suite for high-fidelity media acq
    ```bash
    ./roboto.sh
    ```
-   > `roboto.sh` requires `pwsh` (PowerShell 7+). It will error with an install link if `pwsh` is not found.
+   > `roboto.sh` is a **native Bash script** — no PowerShell required. It auto-downloads yt-dlp and FFmpeg on first run, exactly like the Windows launcher.
+   >
+   > For headless/scripted use: `./roboto.sh <url> [profile]` where profile is `ultra`, `high`, `mobile`, `audio-flac`, `audio-opus`, or `audio-mp3`.
 
 On first run, Mr. Roboto will:
 - Create necessary directories

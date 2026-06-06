@@ -8,7 +8,7 @@
 
 **Target Platform:** Windows 10/11 (x86/x64) and Linux (x86_64/arm64)
 
-**Primary Language:** PowerShell 5.1+ on Windows; PowerShell 7+ on Linux
+**Primary Language:** PowerShell 5.1+ on Windows; native Bash on Linux (no PowerShell required)
 
 ---
 
@@ -557,10 +557,12 @@ try {
 
 **Linux**
 - Any modern x86_64 or arm64 distribution
-- PowerShell 7+ (`pwsh`)
-- `tar` (pre-installed)
+- `bash` 4.2+ (pre-installed everywhere)
+- `curl` or `wget` (pre-installed on most distros)
+- `tar` (pre-installed everywhere)
 - 500MB free disk space (for binaries)
 - Internet connection (for downloads)
+- Optional: `python3` (JSON state parsing; grep fallback used if absent)
 
 ---
 
