@@ -37,9 +37,11 @@ Desktop.ini
 # IDE
 .vscode/
 .idea/
+.vs/
 *.swp
 *.swo
 *~
+test_output.txt
 
 # Logs
 *.log

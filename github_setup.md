@@ -1,4 +1,4 @@
-# 🚀 GitHub Setup Guide for Ms. Roboto
+# 🚀 GitHub Setup Guide for Mr. Roboto
 
 ## Repository is Ready! ✅
 
@@ -16,8 +16,8 @@ Your local Git repository has been initialized with:
 
 **Step 1: Create Repository on GitHub**
 1. Go to https://github.com/new
-2. Repository name: `ms-roboto` (or `mr-roboto`)
-3. Description: `🤖 Ms. Roboto v2.0 - Autonomous Media Acquisition & Archival Agent`
+2. Repository name: `Mr.Roboto`
+3. Description: `🤖 Mr. Roboto v2.0 — portable PowerShell media downloader (yt-dlp + FFmpeg)`
 4. Visibility: **Public** (or Private if you prefer)
 5. ⚠️ **DO NOT** initialize with README, .gitignore, or license (we already have these)
 6. Click **Create repository**
@@ -27,16 +27,16 @@ Your local Git repository has been initialized with:
 GitHub will show you commands. Use these:
 
 ```bash
-cd q:/mr.roboto
-git remote add origin https://github.com/YOUR_USERNAME/ms-roboto.git
+cd "q:/Mr.Roboto v2.0"
+git remote add origin https://github.com/YOUR_USERNAME/Mr.Roboto.git
 git branch -M main
 git push -u origin main
 ```
 
 **Or if you prefer SSH:**
 ```bash
-cd q:/mr.roboto
-git remote add origin git@github.com:YOUR_USERNAME/ms-roboto.git
+cd "q:/Mr.Roboto v2.0"
+git remote add origin git@github.com:YOUR_USERNAME/Mr.Roboto.git
 git branch -M main
 git push -u origin main
 ```
@@ -53,16 +53,16 @@ git push -u origin main
 If you have GitHub CLI installed:
 
 ```bash
-cd q:/mr.roboto
+cd "q:/Mr.Roboto v2.0"
 
 # Login (if not already)
 gh auth login
 
 # Create and push repository
-gh repo create ms-roboto --public --source=. --remote=origin --push
+gh repo create Mr.Roboto --public --source=. --remote=origin --push
 
 # Or for private repo
-gh repo create ms-roboto --private --source=. --remote=origin --push
+gh repo create Mr.Roboto --private --source=. --remote=origin --push
 ```
 
 ---
@@ -71,10 +71,10 @@ gh repo create ms-roboto --private --source=. --remote=origin --push
 
 1. Open GitHub Desktop
 2. File → Add Local Repository
-3. Choose `q:/mr.roboto`
+3. Choose `q:/Mr.Roboto v2.0`
 4. Click "Publish repository"
-5. Name: `ms-roboto`
-6. Description: `🤖 Ms. Roboto v2.0 - Autonomous Media Acquisition & Archival Agent`
+5. Name: `Mr.Roboto`
+6. Description: `🤖 Mr. Roboto v2.0 — portable PowerShell media downloader (yt-dlp + FFmpeg)`
 7. Uncheck "Keep this code private" (or keep checked for private)
 8. Click "Publish Repository"
 
@@ -83,15 +83,15 @@ gh repo create ms-roboto --private --source=. --remote=origin --push
 ## 🔍 What's Included in the Repository
 
 ```
-ms-roboto/
+Mr.Roboto/
 ├── .gitignore              # Excludes binaries, logs, downloads
 ├── LICENSE                 # MIT License
 ├── README.md               # User documentation
-├── TESTING_GUIDE.md        # Comprehensive testing instructions
-├── ARCHITECTURE.md         # System design & diagrams
-├── IMPLEMENTATION_PLAN.md  # Technical implementation details
-├── PROJECT_SUMMARY.md      # Project overview & roadmap
-├── DEV_GUIDE.md           # Developer quick-start
+├── testing_guide.md        # Comprehensive testing instructions
+├── architecture.md         # System design & diagrams
+├── implementation_plan.md  # Technical implementation details
+├── project_summary.md      # Project overview & roadmap
+├── dev_guide.md           # Developer quick-start
 ├── roboto.ps1             # Main script (610 lines)
 ├── bin/.gitkeep           # Placeholder for binaries
 ├── downloads/.gitkeep     # Placeholder for media
@@ -123,12 +123,12 @@ Add these topics to your GitHub repository for discoverability:
 - `windows`
 - `video-processing`
 - `archival`
-- `self-healing`
+- `gpu-encoding`
 - `gpu-acceleration`
 
 ### About Section
 ```
-🤖 Ms. Roboto v2.0 - A portable, self-healing PowerShell automation suite for high-fidelity media acquisition, transformation, and archival. Features automatic dependency management, GPU acceleration, and intelligent error recovery.
+🤖 Mr. Roboto v2.0 — Portable PowerShell media downloader. Downloads yt-dlp and FFmpeg when missing, detects available GPU encoders, and provides an interactive terminal menu with resume support and session logging.
 ```
 
 ### Website
@@ -171,14 +171,14 @@ Once pushed to GitHub, anyone can clone and test:
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/ms-roboto.git
-cd ms-roboto
+git clone https://github.com/YOUR_USERNAME/Mr.Roboto.git
+cd Mr.Roboto
 
-# Run Ms. Roboto
+# Run Mr. Roboto
 powershell -ExecutionPolicy Bypass -File roboto.ps1
 ```
 
-On first run, Ms. Roboto will:
+On first run, Mr. Roboto will:
 1. Create directory structure
 2. Generate `config.json`
 3. Download yt-dlp (~20MB)
@@ -278,4 +278,4 @@ git pull origin main
 
 ---
 
-**Ready to share Ms. Roboto with the world! 🤖💜**
+**Ready to share Mr. Roboto with the world! 🤖**

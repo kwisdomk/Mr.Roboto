@@ -442,7 +442,7 @@ graph TD
 ### Network Optimization
 
 - Resume-capable downloads
-- Exponential backoff on failures
+- Up to 3 retry attempts for failures
 - Connection pooling
 - Parallel chunk downloads (future)
 

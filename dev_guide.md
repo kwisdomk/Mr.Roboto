@@ -39,11 +39,11 @@ Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 <#
 .SYNOPSIS
-    Mr. Roboto v2.0 - Autonomous Media Acquisition Agent
+    Mr. Roboto v2.0 - Portable PowerShell media downloader
 
 .DESCRIPTION
-    A portable, self-healing PowerShell automation suite for high-fidelity
-    media acquisition, transformation, and archival.
+    A portable PowerShell script that downloads media via yt-dlp and FFmpeg,
+    featuring GPU encoder detection, stream-copy muxing, resume support, and session logging.
 
 .PARAMETER Url
     Media URL to download (optional, can be provided interactively)
@@ -533,7 +533,7 @@ function Start-MediaAcquisition {
         '--newline'
     )
     
-    # Add encoder if hardware acceleration available
+    # Add stream-copy args when a hardware encoder is detected
     if ($hardware.Encoder -ne 'libx264') {
         $ytdlpArgs += '--postprocessor-args', "ffmpeg:-c:v $($hardware.Encoder)"
     }
@@ -567,7 +567,7 @@ function Show-Banner {
     Write-Host ""
     Write-Host "╔═══════════════════════════════════════════════════════╗" -ForegroundColor Cyan
     Write-Host "║              Mr. Roboto v$($script:Version)                          ║" -ForegroundColor Cyan
-    Write-Host "║        Autonomous Media Acquisition Agent             ║" -ForegroundColor Cyan
+    Write-Host "║        Portable Media Downloader                      ║" -ForegroundColor Cyan
     Write-Host "╚═══════════════════════════════════════════════════════╝" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "System Information:" -ForegroundColor Yellow
@@ -576,7 +576,7 @@ function Show-Banner {
     Write-Host "  Architecture: $($hardware.Architecture)" -ForegroundColor White
     Write-Host "  Mode: Interactive" -ForegroundColor White
     Write-Host ""
-    Write-Host "Ready to acquire media." -ForegroundColor Green
+    Write-Host "Ready to download." -ForegroundColor Green
     Write-Host ""
 }
 ```
@@ -671,4 +671,4 @@ Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 ---
 
-**Ready to build? Switch to Code mode and let's implement!**
+**Ready to start? Switch to Code mode and begin implementation.**

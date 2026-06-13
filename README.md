@@ -1,30 +1,29 @@
 # 🤖 Mr. Roboto v2.0
 
-**The Autonomous Media Acquisition & Archival Agent**
+**Portable PowerShell media downloader**
 
-A portable, self-healing PowerShell automation suite for high-fidelity media acquisition, transformation, and archival.
+A portable PowerShell script that downloads media via yt-dlp and FFmpeg, featuring GPU encoder detection, stream-copy muxing, resume support, and session logging.
 
 ---
 
 ## ✨ Features
 
-### 🔧 Self-Healing Architecture
-- **Zero Configuration** - Works out of the box, no installation required
-- **Auto-Download Dependencies** - Automatically fetches yt-dlp and FFmpeg on first run
-- **Hardware Detection** - Automatically detects and uses GPU acceleration (NVENC/QSV/AMF)
-- **Smart Fallbacks** - Gracefully handles missing hardware or network issues
+### 🔧 Zero-Setup Bootstrap
+- **No installation** - Works out of the box, no setup required
+- **Downloads yt-dlp and FFmpeg when missing** - Fetches them on first run
+- **Detects available GPU encoders** - Identifies NVENC/QSV/AMF when available
+- **Graceful fallbacks** - Handles missing hardware or network issues
 
-### 🎯 Intelligent Automation
-- **Quality Profiles** - Choose from Ultra (4K), High (1080p), or Mobile (720p)
-- **Resume Capability** - Automatically resume interrupted downloads
+### 🎯 Download Features
+- **Quality Profiles** - Choose from Ultra (4K), High (1080p), Mobile (720p), or audio-only formats (FLAC/Opus/MP3)
+- **Resume support** - Continue interrupted downloads
 - **Progress Tracking** - Real-time progress with speed and ETA
-- **Error Recovery** - Automatic retry with exponential backoff
+- **Error Recovery** - Automatic retry (up to 3 attempts) for transient and auth failures
 
-### 🎨 Polished Interface
-- **Beautiful CLI** - Modern terminal UI with Unicode indicators
+### 🎨 Interactive Terminal Menu
+- **Terminal UI** - Menu-driven interface with Unicode indicators
 - **System Info Banner** - Shows GPU, FFmpeg, and yt-dlp versions
-- **Color-Coded Logs** - Easy-to-read status messages
-- **Professional Feedback** - Clear progress bars and status updates
+- **Session logging** - Timestamped log files for every run with 30-day rotation
 
 ---
 
@@ -40,8 +39,8 @@ A portable, self-healing PowerShell automation suite for high-fidelity media acq
 1. **Download Mr. Roboto**
    ```powershell
    # Clone or download this repository
-   git clone https://github.com/kwisdomk/msr.git
-   cd msr
+   git clone https://github.com/kwisdomk/Mr.Roboto.git
+   cd Mr.Roboto
    ```
 
 2. **Run Mr. Roboto**
@@ -55,7 +54,6 @@ On first run, Mr. Roboto will:
 - Create necessary directories
 - Download yt-dlp and FFmpeg
 - Detect your GPU capabilities
-- **Prompt you to select a browser for YouTube cookie authentication**
 - Present the interactive menu
 
 ---
@@ -71,7 +69,7 @@ You'll see:
 ```
 ╔═══════════════════════════════════════════════════════╗
 ║          M R .  R O B O T O  v2.0                     ║
-║      Autonomous Media Acquisition Agent               ║
+║      Portable Media Downloader                      ║
 ╚═══════════════════════════════════════════════════════╝
 
   System Information
@@ -84,7 +82,7 @@ You'll see:
   Mode     : Interactive
 
   ──────────────────────────────────────────────────────
-  Ready to acquire media.
+  Ready to download.
 
   ┌─────────────────────────────────────────────────────────┐
   │  Mr. Roboto — Acquisition Mode                          │
@@ -99,19 +97,39 @@ You'll see:
   │  [5] Opus    Hi-Fi native      (bit-perfect, smallest)  │
   │  [6] MP3     320 kbps          (universal compat)       │
   ├─────────────────────────────────────────────────────────┤
+  │  [7] View Download History                              │
   │  [Q] Quit                                               │
   └─────────────────────────────────────────────────────────┘
 
   Choice:
 ```
 
+### Direct Mode
+
+You can also run Mr. Roboto directly from PowerShell for single-command execution:
+```powershell
+.\roboto.ps1 -Url "https://youtube.com/watch?v=..." -Profile high
+```
+
+### Additional Runtime Features
+
+- **Save Location:** The script prompts for a save location per-download, defaulting to the OS native `Videos` or `Music` folders based on the chosen profile.
+- **Playlist Handling:** If a playlist URL is detected, Mr. Roboto automatically previews the first 5 items and lets you choose between downloading a single video or the entire playlist.
+- **Metadata Embedding:** Automatically embeds thumbnails and metadata using `--embed-thumbnail` and `--embed-metadata`.
+- **Deno Warning:** yt-dlp functions best with the Deno JS runtime installed. If Deno is missing, Mr. Roboto will output a warning with install instructions.
+
 ### Quality Profiles
 
-| Profile | Resolution | Container | Use Case |
-|---------|-----------|-----------|----------|
-| **Ultra** | 4K (2160p) | MKV | Maximum quality, archival |
-| **High** | 1080p | MP4 | Recommended, balanced |
-| **Mobile** | 720p | MP4 | Smaller files, portable |
+| Profile | Resolution / Details | Container | Codec Details | Use Case |
+|---------|-----------|-----------|---------------|----------|
+| **Ultra** | 4K (2160p) | MKV | Stream copy | Maximum quality, archival |
+| **High** | 1080p | MP4 | Stream copy | Recommended, balanced |
+| **Mobile** | 720p | MP4 | Stream copy | Smaller files, portable |
+| **audio-flac** | Lossless | FLAC | Native FLAC | Archival grade audio |
+| **audio-opus** | High-Fidelity | OPUS | Native OPUS | Bit-perfect, smallest size |
+| **audio-mp3** | 320 kbps | MP3 | MP3 320K | Universal compatibility |
+
+*Note: Video profiles use ffmpeg's stream-copy (`-c copy`) to mux the audio and video streams together. This preserves the original codec quality and does not perform re-encoding.*
 
 ### Supported Sites
 
@@ -140,21 +158,25 @@ Edit `config.json` to customize behavior:
     "offlineMode": false,
     "notifications": true,
     "preferredContainer": "mp4",
-    "libraryMode": false
+    "libraryMode": false,
+    "browserCookies": "brave"
   }
 }
 ```
 
 ### Configuration Options
 
-| Setting | Description | Default |
+| Setting | Description | Status |
 |---------|-------------|---------|
-| `defaultQuality` | Default quality profile (ultra/high/mobile) | `high` |
-| `autoUpdate` | Auto-update yt-dlp on startup | `true` |
-| `offlineMode` | Skip update checks | `false` |
-| `notifications` | Enable toast notifications (Phase 4) | `true` |
-| `preferredContainer` | Default container format | `mp4` |
-| `libraryMode` | Enable metadata sidecars (Phase 3) | `false` |
+| `profiles` | Define quality profiles and formatting | ✅ Functional |
+| `binaries` | Download locations for yt-dlp and FFmpeg | ✅ Functional |
+| `defaultQuality` | Default quality profile | 🚧 Planned (currently defaults to `high` via CLI) |
+| `autoUpdate` | Auto-update yt-dlp on startup | 🚧 Planned |
+| `offlineMode` | Skip update checks | 🚧 Planned (currently handled via `-OfflineMode` CLI switch) |
+| `notifications` | Enable toast notifications | 🚧 Planned (Phase 4) |
+| `preferredContainer` | Default container format | 🚧 Planned (currently handled in profile definition) |
+| `libraryMode` | Enable metadata sidecars | 🚧 Planned (Phase 3) |
+| `browserCookies` | Browser choice for auth retry | 🚧 Planned (currently hardcoded to `edge`) |
 
 ---
 
@@ -179,18 +201,18 @@ Edit `config.json` to customize behavior:
 
 ---
 
-## 🎮 Hardware Acceleration
+## 🎮 GPU Detection
 
-Mr. Roboto automatically detects and uses GPU acceleration:
+Mr. Roboto detects available GPU encoders, but current downloads use stream-copy muxing (`-c copy`) without re-encoding. The original codec quality is preserved as-is.
 
-| GPU Vendor | Encoder | Performance |
-|------------|---------|-------------|
-| **NVIDIA** | NVENC | ⚡⚡⚡ Fastest |
-| **Intel** | QSV | ⚡⚡ Fast |
-| **AMD** | AMF | ⚡⚡ Fast |
-| **None** | libx264 | ⚡ Software |
+| GPU Vendor | Detected Encoder |
+|------------|---------|
+| **NVIDIA** | NVENC |
+| **Intel** | QSV |
+| **AMD** | AMF |
+| **None** | libx264 (Software) |
 
-No configuration needed - it just works!
+No configuration needed - detection happens automatically!
 
 ---
 
@@ -199,10 +221,10 @@ No configuration needed - it just works!
 If a download is interrupted:
 
 1. Restart Mr. Roboto
-2. You'll be prompted to resume
+2. You'll be prompted to resume (unless the session is older than 2 hours)
 3. Download continues from where it left off
 
-Resume data is stored in `/state/session.json`
+Resume data is stored in `/state/session.json`. Stale sessions older than 2 hours are automatically discarded to prevent spurious prompts.
 
 ---
 
@@ -231,11 +253,9 @@ Log levels:
 - Manually download from: https://github.com/BtbN/FFmpeg-Builds/releases
 
 ### "Download failed" / YouTube bot detection
-- Mr. Roboto will detect the bot-detection error automatically and re-prompt for browser cookies
-- Make sure you are **logged into YouTube** in the browser you select
-- Close the browser before running Mr. Roboto (some browsers lock the cookie database)
-- To change your browser choice, edit `config.json` → `settings.browserCookies`
-- Supported values: `chrome`, `firefox`, `edge`, `brave`, `vivaldi`, `opera`, `chromium`, `none`
+- Mr. Roboto will detect the bot-detection error automatically and attempt to retry the download using your **Edge browser cookies**.
+- Make sure you are **logged into YouTube** in Microsoft Edge.
+- Close the Edge browser before running Mr. Roboto (some browsers lock the cookie database).
 - Check `/logs/` for the full error output
 
 ### "GPU not detected"
@@ -247,40 +267,53 @@ Log levels:
 
 ## 🗺️ Roadmap
 
-### ✅ Phase 1-2: MVP (Current)
-- [x] Self-healing bootstrapper
-- [x] GPU detection
-- [x] Interactive menu
-- [x] Quality profiles
-- [x] Resume capability
-- [x] Browser cookie authentication (YouTube bot detection bypass)
-- [x] Audio-only profiles (FLAC / Opus / MP3)
+### Current: Working Features
+- [x] Dependency bootstrap for missing `yt-dlp` and FFmpeg
+- [x] GPU vendor/encoder detection
+- [x] Interactive terminal menu
+- [x] Direct URL mode via `-Url`
+- [x] Video profiles: Ultra, High, Mobile
+- [x] Audio profiles: FLAC, Opus, MP3
+- [x] Stream-copy muxing for video downloads
+- [x] Thumbnail and metadata embedding
+- [x] Resume support via saved session state and `--continue`
+- [x] Download history viewer
+- [x] Save-location prompt with Music/Videos defaults
+- [x] Playlist detection with first-5 preview
+- [x] Edge browser-cookie retry on auth failures
+- [x] Per-session logging with 30-day rotation
 
-### 🚧 Phase 3: Library Mode (Next)
-- [ ] Thumbnail embedding
+### Planned: Config Cleanup
+- [ ] Make `defaultQuality` control the default profile
+- [ ] Make `offlineMode` config setting match the `-OfflineMode` switch
+- [ ] Make `browserCookies` select the browser used for cookie auth
+- [ ] Remove or implement unused config settings
+
+### Planned: Library Mode
 - [ ] JSON metadata sidecars
 - [ ] SHA-256 hashing
 - [ ] Playlist-aware folders
+- [ ] Library organization mode
 
-### 📋 Phase 4: Automation
-- [ ] Clipboard listener daemon
+### Planned: Automation
+- [ ] Clipboard listener
 - [ ] Toast notifications
-- [ ] Background processing
+- [ ] Background queue
 
-### 🎯 Phase 5: Profiles & Presets
-- [ ] Custom quality profiles
-- [ ] Research/mobile/archive modes
+### Planned: Profiles & Presets
+- [ ] Custom quality profile management
+- [ ] Research/mobile/archive presets
 - [ ] Profile import/export
 
-### 📈 Phase 6: Integrity & Audit
+### Planned: Integrity & Audit
 - [ ] Batch manifests
 - [ ] Verification passes
 - [ ] Acquisition reports
 
-### 🔌 Phase 7: API/Headless Mode
-- [ ] CLI entrypoints
-- [ ] Pipeline integration
-- [ ] Scriptable automation
+### Planned: Headless/API Mode
+- [ ] Non-interactive CLI options for all prompts
+- [ ] Pipeline-friendly exit codes and output
+- [ ] Scriptable/headless mode
 
 ---
 
@@ -311,9 +344,9 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/kwisdomk/msr/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/kwisdomk/msr/discussions)
-- **Documentation**: [Wiki](https://github.com/kwisdomk/msr/wiki)
+- **Issues**: [GitHub Issues](https://github.com/kwisdomk/Mr.Roboto/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/kwisdomk/Mr.Roboto/discussions)
+- **Documentation**: [Wiki](https://github.com/kwisdomk/Mr.Roboto/wiki)
 
 ---
 
@@ -321,11 +354,11 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 Mr. Roboto is designed to be:
 
-1. **Reliable** - Self-healing, automatic recovery
-2. **Portable** - Zero installation, works anywhere
-3. **Intelligent** - Hardware-aware, optimized processing
-4. **Professional** - Polished UX, comprehensive logging
-5. **Extensible** - Modular architecture, future-proof
+1. **Reliable** - Retries, fallbacks, and resume support
+2. **Portable** - No installation, runs from any folder
+3. **Hardware-aware** - Detects GPU encoders automatically
+4. **Easy to use** - Interactive terminal menu with clear feedback
+5. **Extensible** - Modular architecture, planned plugin system
 
 ---
 

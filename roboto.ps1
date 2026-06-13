@@ -1,11 +1,11 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Mr. Roboto v2.0 - Autonomous Media Acquisition Agent
+    Mr. Roboto v2.0 - Portable PowerShell media downloader
 
 .DESCRIPTION
-    A portable, self-healing PowerShell automation suite for high-fidelity
-    media acquisition, transformation, and archival.
+    A portable PowerShell script that downloads media via yt-dlp and FFmpeg,
+    with GPU encoder detection, stream-copy muxing, resume support, and session logging.
 
 .PARAMETER Url
     Media URL to download (optional, can be provided interactively)
@@ -453,7 +453,7 @@ function Show-Banner {
     Write-Host ""
     Write-Host "  +=========================================================+" -ForegroundColor $c
     Write-Host "  |          M R .  R O B O T O  v$($script:Version)               |" -ForegroundColor $c
-    Write-Host "  |      Autonomous Media Acquisition Agent               |" -ForegroundColor $c
+    Write-Host "  |      Portable Media Downloader                      |" -ForegroundColor $c
     Write-Host "  +=========================================================+" -ForegroundColor $c
     Write-Host ""
     Write-Host "  System Information" -ForegroundColor $y
@@ -468,7 +468,7 @@ function Show-Banner {
     Write-Host ""
     Write-Host "  -----------------------------------------------------------" -ForegroundColor DarkGray
     Write-Host -NoNewline '  '
-    Show-Typewriter -Text 'Ready to acquire media.' -DelayMs 22 -Color 'Green'
+    Show-Typewriter -Text 'Ready to download.' -DelayMs 22 -Color 'Green'
     Write-Host ''
 }
 

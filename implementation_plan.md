@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**Goal:** Build a portable, self-healing PowerShell-based media acquisition agent with automatic dependency management and hardware-aware processing.
+**Goal:** Build a portable PowerShell media downloader with automatic dependency management (yt-dlp + FFmpeg), GPU encoder detection, and an interactive terminal menu.
 
 **Scope:** Phase 1 (Bootstrapper Core) + Phase 2 (Interactive Menu System)
 
@@ -237,7 +237,7 @@ function Find-Binary {
 ```
 ╔═══════════════════════════════════════════════════════╗
 ║              Mr. Roboto v2.0                          ║
-║        Autonomous Media Acquisition Agent             ║
+║        Portable Media Downloader                     ║
 ╚═══════════════════════════════════════════════════════╝
 
 System Information:
@@ -247,7 +247,7 @@ System Information:
   Mode: Interactive
   Architecture: x64
 
-Ready to acquire media.
+Ready to download.
 ```
 
 **Implementation Notes:**
@@ -355,7 +355,7 @@ Speed: 2.5 MB/s | Encoder: NVENC
 **Module:** `Handle-Error`
 
 **Error Categories:**
-1. **Network Errors** - Retry with exponential backoff
+1. **Network Errors** - Retry up to 3 times (5s delay)
 2. **Format Unavailable** - Fallback to lower quality
 3. **Encoder Failure** - Switch to software encoding
 4. **Disk Space** - Alert and abort
@@ -465,7 +465,7 @@ try {
 - [ ] Error handling and recovery
 - [ ] Resume capability for interrupted downloads
 - [ ] Comprehensive logging
-- [ ] Professional CLI interface
+- [ ] Interactive terminal menu with clear feedback
 
 ### Performance Targets
 - Startup time: < 3 seconds
@@ -558,8 +558,8 @@ try {
 ## Documentation Deliverables
 
 1. **README.md** - User-facing documentation
-2. **IMPLEMENTATION_PLAN.md** - This document
-3. **ARCHITECTURE.md** - Technical deep-dive (future)
+2. **implementation_plan.md** - This document
+3. **architecture.md** - Technical deep-dive (future)
 4. **API.md** - Headless mode reference (Phase 7)
 5. **Inline Comments** - Code documentation
 
@@ -587,9 +587,9 @@ try {
 
 This implementation plan provides a clear roadmap for building Mr. Roboto v2.0 MVP. By focusing on Phases 1-2, we establish a solid foundation with:
 
-- **Reliability** through self-healing binaries
+- **Reliability** through auto-download and retry logic
 - **Portability** via zero-configuration deployment
-- **User Experience** with polished CLI interface
+- **Usability** with an interactive terminal menu
 - **Extensibility** for future enhancements
 
 The modular architecture ensures each component can be developed, tested, and refined independently while maintaining cohesion with the overall system design.

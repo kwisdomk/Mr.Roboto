@@ -21,7 +21,7 @@ This guide covers all available tests for the current implementation (Sprint 1 &
 
 **Command:**
 ```powershell
-cd q:/mr.roboto
+cd "q:/Mr.Roboto v2.0"
 .\roboto.ps1
 ```
 
@@ -37,7 +37,7 @@ Created default configuration file
 [2026-01-31 00:57:43] [DEBUG] Architecture: x64
 [2026-01-31 00:57:44] [INFO] GPU detected: [Your GPU Name]
 [2026-01-31 00:57:44] [INFO] Selected encoder: [h264_nvenc/h264_qsv/h264_amf/libx264]
-Initialization complete. Ready to acquire media.
+Initialization complete. Ready to download.
 ```
 
 **What to verify:**
@@ -56,7 +56,7 @@ Initialization complete. Ready to acquire media.
 **Command:**
 ```powershell
 # Delete binaries first to test download
-Remove-Item -Path "q:/mr.roboto/bin" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "q:/Mr.Roboto v2.0/bin" -Recurse -Force -ErrorAction SilentlyContinue
 .\roboto.ps1
 ```
 
@@ -114,7 +114,7 @@ This may take a minute on first run.
 
 **Command:**
 ```powershell
-Get-Content q:/mr.roboto/config.json | ConvertFrom-Json | ConvertTo-Json -Depth 10
+Get-Content "q:/Mr.Roboto v2.0/config.json" | ConvertFrom-Json | ConvertTo-Json -Depth 10
 ```
 
 **Expected Output:**
@@ -158,7 +158,7 @@ Get-Content q:/mr.roboto/config.json | ConvertFrom-Json | ConvertTo-Json -Depth 
 .\roboto.ps1
 
 # Check logs
-Get-ChildItem q:/mr.roboto/logs/
+Get-ChildItem "q:/Mr.Roboto v2.0/logs/"
 ```
 
 **Expected Output:**
@@ -176,7 +176,7 @@ session_20260131_010530.log
 
 **View a log:**
 ```powershell
-Get-Content q:/mr.roboto/logs/session_*.log | Select-Object -Last 20
+Get-Content "q:/Mr.Roboto v2.0/logs/session_*.log" | Select-Object -Last 20
 ```
 
 ---
@@ -213,10 +213,10 @@ Get-Content q:/mr.roboto/logs/session_*.log | Select-Object -Last 20
 **Command:**
 ```powershell
 # Check yt-dlp version
-& "q:/mr.roboto/bin/x64/yt-dlp.exe" --version
+& "q:/Mr.Roboto v2.0/bin/x64/yt-dlp.exe" --version
 
 # Check FFmpeg version
-& "q:/mr.roboto/bin/x64/ffmpeg.exe" -version
+& "q:/Mr.Roboto v2.0/bin/x64/ffmpeg.exe" -version
 ```
 
 **Expected Output:**
@@ -242,7 +242,7 @@ ffmpeg version N-xxxxx-gxxxxxxxx
 **Test 8a: Corrupted Config**
 ```powershell
 # Corrupt the config
-Set-Content q:/mr.roboto/config.json -Value "{ invalid json"
+Set-Content "q:/Mr.Roboto v2.0/config.json" -Value "{ invalid json"
 .\roboto.ps1
 ```
 
@@ -251,7 +251,7 @@ Set-Content q:/mr.roboto/config.json -Value "{ invalid json"
 **Test 8b: No Write Permissions**
 ```powershell
 # Make logs directory read-only
-Set-ItemProperty q:/mr.roboto/logs -Name IsReadOnly -Value $true
+Set-ItemProperty "q:/Mr.Roboto v2.0/logs" -Name IsReadOnly -Value $true
 .\roboto.ps1
 ```
 
@@ -290,11 +290,11 @@ Set-ItemProperty q:/mr.roboto/logs -Name IsReadOnly -Value $true
 **Command:**
 ```powershell
 # Delete everything except the script
-Remove-Item q:/mr.roboto/bin -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item q:/mr.roboto/logs -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item q:/mr.roboto/config.json -Force -ErrorAction SilentlyContinue
-Remove-Item q:/mr.roboto/downloads -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item q:/mr.roboto/cache -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item "q:/Mr.Roboto v2.0/bin" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item "q:/Mr.Roboto v2.0/logs" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item "q:/Mr.Roboto v2.0/config.json" -Force -ErrorAction SilentlyContinue
+Remove-Item "q:/Mr.Roboto v2.0/downloads" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item "q:/Mr.Roboto v2.0/cache" -Recurse -Force -ErrorAction SilentlyContinue
 
 # Run script
 .\roboto.ps1
@@ -352,7 +352,7 @@ $files = @(
     "cache"
 )
 foreach ($file in $files) {
-    $exists = Test-Path "q:/mr.roboto/$file"
+    $exists = Test-Path "q:/Mr.Roboto v2.0/$file"
     $status = if ($exists) { "✅ PASS" } else { "❌ FAIL" }
     Write-Host "  $file : $status"
 }
@@ -360,7 +360,7 @@ Write-Host ""
 
 # Test 3: Check log content
 Write-Host "Test 3: Log Content..." -ForegroundColor Yellow
-$logFile = Get-ChildItem q:/mr.roboto/logs/ | Select-Object -Last 1
+$logFile = Get-ChildItem "q:/Mr.Roboto v2.0/logs/" | Select-Object -Last 1
 if ($logFile) {
     Write-Host "  Latest log: $($logFile.Name)" -ForegroundColor Green
     Get-Content $logFile.FullName | Select-Object -Last 5

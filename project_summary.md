@@ -2,7 +2,7 @@
 
 ## Overview
 
-**Mr. Roboto v2.0** is a portable, self-healing PowerShell automation suite designed for high-fidelity media acquisition, transformation, and archival. This MVP focuses on Phases 1-2: establishing a robust foundation with automatic dependency management and an intuitive interactive interface.
+**Mr. Roboto v2.0** is a portable PowerShell media downloader. It downloads yt-dlp and FFmpeg when missing, detects available GPU encoders, and provides an interactive terminal menu with resume support and session logging. This MVP focuses on Phases 1-2: dependency bootstrapping and the interactive download interface.
 
 ---
 
@@ -48,23 +48,23 @@
 
 ## Key Features
 
-### 🔧 Self-Healing Architecture
-- **Zero Configuration** - Works immediately after extraction
-- **Auto-Download Dependencies** - Fetches yt-dlp and FFmpeg on first run
-- **Hardware Detection** - Automatically uses GPU acceleration when available
-- **Smart Fallbacks** - Gracefully handles missing hardware or network issues
+### 🔧 Zero-Setup Bootstrap
+- **No installation** - Works immediately after extraction
+- **Downloads yt-dlp and FFmpeg when missing** - Fetches them on first run
+- **Detects available GPU encoders** - Video downloads use stream-copy muxing, not GPU re-encoding
+- **Graceful fallbacks** - Handles missing hardware or network issues
 
-### 🎯 Intelligent Processing
+### 🎯 Download Features
 - **Quality Profiles** - Pre-configured for different use cases
-- **Hardware Acceleration** - NVENC/QSV/AMF support with software fallback
-- **Resume Capability** - Continue interrupted downloads
-- **Error Recovery** - Automatic retry with exponential backoff
+- **GPU Detection** - NVENC/QSV/AMF identification with software fallback
+- **Resume support** - Continue interrupted downloads
+- **Error Recovery** - Automatic retry for auth/transient failures, up to 3 attempts
 
-### 🎨 Professional Interface
-- **Beautiful CLI** - Modern terminal UI with Unicode indicators
+### 🎨 Interactive Terminal Menu
+- **Terminal UI** - Menu-driven interface with Unicode indicators
 - **System Info Banner** - Shows GPU, FFmpeg, and yt-dlp versions
 - **Real-time Progress** - Speed, ETA, and completion percentage
-- **Color-Coded Logs** - Easy-to-read status messages
+- **Session logging** - Timestamped log files for every run
 
 ---
 
@@ -157,14 +157,14 @@
 
 ---
 
-## Hardware Acceleration
+## GPU Detection
 
-| GPU Vendor | Encoder | Performance | Fallback |
-|------------|---------|-------------|----------|
-| **NVIDIA** | NVENC | ⚡⚡⚡ Fastest | ✅ |
-| **Intel** | QSV | ⚡⚡ Fast | ✅ |
-| **AMD** | AMF | ⚡⚡ Fast | ✅ |
-| **None** | libx264 | ⚡ Software | N/A |
+| GPU Vendor | Detected Encoder | Fallback |
+|------------|---------|----------|
+| **NVIDIA** | NVENC | ✅ |
+| **Intel** | QSV | ✅ |
+| **AMD** | AMF | ✅ |
+| **None** | libx264 (Software) | N/A |
 
 ---
 
@@ -181,7 +181,7 @@
 - [ ] Error handling and recovery
 - [ ] Resume capability for interrupted downloads
 - [ ] Comprehensive logging
-- [ ] Professional CLI interface
+- [ ] Interactive terminal menu with clear feedback
 
 ### Performance Targets
 
@@ -197,10 +197,10 @@
 | Document | Purpose | Status |
 |----------|---------|--------|
 | **README.md** | User-facing documentation | ✅ Complete |
-| **IMPLEMENTATION_PLAN.md** | Detailed technical plan | ✅ Complete |
-| **ARCHITECTURE.md** | System design and diagrams | ✅ Complete |
-| **DEV_GUIDE.md** | Developer quick-start | ✅ Complete |
-| **PROJECT_SUMMARY.md** | This document | ✅ Complete |
+| **implementation_plan.md** | Detailed technical plan | ✅ Complete |
+| **architecture.md** | System design and diagrams | ✅ Complete |
+| **dev_guide.md** | Developer quick-start | ✅ Complete |
+| **project_summary.md** | This document | ✅ Complete |
 
 ---
 
@@ -303,11 +303,11 @@
 
 Mr. Roboto is designed to be:
 
-1. **Reliable** - Self-healing, automatic recovery
-2. **Portable** - Zero installation, works anywhere
-3. **Intelligent** - Hardware-aware, optimized processing
-4. **Professional** - Polished UX, comprehensive logging
-5. **Extensible** - Modular architecture, future-proof
+1. **Reliable** - Retries, fallbacks, and resume support
+2. **Portable** - No installation, runs from any folder
+3. **Hardware-aware** - Detects GPU encoders automatically
+4. **Easy to use** - Interactive terminal menu with clear feedback
+5. **Extensible** - Modular architecture, planned plugin system
 
 ---
 
@@ -350,7 +350,7 @@ This comprehensive plan provides:
 
 The foundation is solid, the plan is actionable, and the path forward is clear.
 
-**Ready to build Mr. Roboto v2.0!** 🤖
+**Mr. Roboto v2.0 is ready for implementation.** 🤖
 
 ---
 
