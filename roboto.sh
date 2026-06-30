@@ -24,7 +24,7 @@
 # =============================================================================
 set -euo pipefail
 
-VERSION="2.1.0"
+VERSION="2.1.0-beta.1"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ── Architecture ──────────────────────────────────────────────────────────────
@@ -235,7 +235,7 @@ show_banner() {
     printf '\n'
     printf '%s\n' "${C}  +=========================================================+${N}"
     printf '%s\n' "${C}  |          M R .  R O B O T O  v${VERSION}               |${N}"
-    printf '%s\n' "${C}  |      Autonomous Media Acquisition Agent               |${N}"
+    printf '%s\n' "${C}  |      Portable Media Downloader                        |${N}"
     printf '%s\n' "${C}  +=========================================================+${N}"
     printf '\n'
     printf '%s\n' "${Y}  System Information${N}"
