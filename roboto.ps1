@@ -268,7 +268,10 @@ function Initialize-Environment {
 function Get-ArchInfo {
     <# Returns @{ Arch = 'x64'; ConfigKey = 'x64' } on Windows,
        @{ Arch = 'x64'; ConfigKey = 'linux-x64' } on Linux, etc. #>
-    if ($IsLinux -or $IsMacOS) {
+    if ($IsMacOS) {
+        throw "macOS is not supported yet because no macOS binaries are configured."
+    }
+    if ($IsLinux) {
         $cpu = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLower()
         return @{ Arch = $cpu; ConfigKey = "linux-$cpu" }
     }
@@ -314,7 +317,8 @@ function Get-HardwareCapabilities {
         # NVIDIA: nvidia-smi is the most reliable source
         $nvSmi = Get-Command 'nvidia-smi' -ErrorAction SilentlyContinue
         if ($nvSmi) {
-            $detected = (& nvidia-smi --query-gpu=name --format=csv,noheader 2>$null | Select-Object -First 1).Trim()
+            $detected = & nvidia-smi --query-gpu=name --format=csv,noheader 2>$null | Select-Object -First 1
+            if ($null -ne $detected) { $detected = $detected.Trim() }
             $gpuName  = if ($detected) { $detected } else { 'NVIDIA GPU' }
             $encoder  = 'h264_nvenc'
             Write-Log "INFO" "NVIDIA GPU detected via nvidia-smi: $gpuName"
@@ -323,7 +327,8 @@ function Get-HardwareCapabilities {
             # Fallback: parse lspci for VGA/3D/Display controllers
             $lspci = Get-Command 'lspci' -ErrorAction SilentlyContinue
             if ($lspci) {
-                $vgaLine = (& lspci 2>$null | Select-String -Pattern 'VGA|3D|Display' | Select-Object -First 1).ToString()
+                $vgaMatch = & lspci 2>$null | Select-String -Pattern 'VGA|3D|Display' | Select-Object -First 1
+                $vgaLine = if ($null -ne $vgaMatch) { $vgaMatch.ToString() } else { $null }
                 if ($vgaLine) {
                     $gpuName = if ($vgaLine -match ':\s+(.+)$') { $matches[1].Trim() } else { $vgaLine.Trim() }
                     $encoder = if     ($vgaLine -match 'NVIDIA|GeForce|GTX|RTX|Quadro') { 'h264_nvenc' }

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Mr. Roboto v2.1 — Native Linux/macOS launcher
+# Mr. Roboto v2.1 — Native Linux launcher
 # No PowerShell required. Requires: bash, curl or wget, tar.
 #
 # CHANGELOG (v2.1.0) — fixes for PR review blockers:
@@ -31,7 +31,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 case "$(uname -m)" in
     x86_64)  ARCH="x64";   YTDLP_SUFFIX="linux";         FFMPEG_SUFFIX="linux64"    ;;
     aarch64) ARCH="arm64"; YTDLP_SUFFIX="linux_aarch64";  FFMPEG_SUFFIX="linuxarm64" ;;
-    armv7l)  ARCH="arm";   YTDLP_SUFFIX="linux_armv7l";   FFMPEG_SUFFIX="linux64"    ;;
+    armv7l)
+        printf '%s\n' "armv7l is not currently supported because bundled FFmpeg downloads are only available for x86_64 and aarch64." >&2
+        exit 1
+        ;;
     *)       ARCH="x64";   YTDLP_SUFFIX="linux";          FFMPEG_SUFFIX="linux64"    ;;
 esac
 
@@ -182,8 +185,13 @@ install_ffmpeg() {
     rm -rf "$extract"; mkdir -p "$extract"
     tar -xJf "$archive" -C "$extract"
 
-    local bin_dir
-    bin_dir=$(find "$extract" -name 'ffmpeg' -type f | head -1 | xargs -I{} dirname {})
+    local bin_dir ffmpeg_path
+    ffmpeg_path=$(find "$extract" -name 'ffmpeg' -type f | head -1)
+    if [[ -n "$ffmpeg_path" ]]; then
+        bin_dir=$(dirname "$ffmpeg_path")
+    else
+        bin_dir=""
+    fi
     if [[ -z "$bin_dir" ]]; then
         log ERROR "ffmpeg binary not found in archive"
         printf '%s\n' "${R}[ERROR] ffmpeg not found in downloaded archive.${N}" >&2
@@ -230,8 +238,8 @@ check_deps() {
 show_banner() {
     local ytdlp ffmpeg ytver ffver
     ytdlp=$(find_binary yt-dlp); ffmpeg=$(find_binary ffmpeg)
-    ytver=$("$ytdlp" --version 2>/dev/null || printf '?')
-    ffver=$("$ffmpeg" -version 2>/dev/null | awk 'NR==1{print $3}')
+    if [[ -n "$ytdlp" ]]; then ytver=$("$ytdlp" --version 2>/dev/null || printf '?'); else ytver="not installed"; fi
+    if [[ -n "$ffmpeg" ]]; then ffver=$("$ffmpeg" -version 2>/dev/null | awk 'NR==1{print $3}'); else ffver="not installed"; fi
     printf '\n'
     printf '%s\n' "${C}  +=========================================================+${N}"
     printf '%s\n' "${C}  |          M R .  R O B O T O  v${VERSION}               |${N}"
@@ -254,10 +262,34 @@ show_banner() {
 # State / Resume
 # =============================================================================
 
+_json_escape() {
+    local s="$1"
+    s="${s//\\/\\\\}"
+    s="${s//\"/\\\"}"
+    s="${s//$'\n'/\\n}"
+    s="${s//$'\r'/\\r}"
+    s="${s//$'\t'/\\t}"
+    printf '%s' "$s"
+}
+
 save_state() {
-    cat > "$STATE_FILE" <<EOF
-{"url":"$1","profile":"$2","downloadDir":"$3","status":"in_progress","timestamp":"$(date -Iseconds)"}
+    local url="$1" profile="$2" dir="$3" ts
+    ts=$(date '+%Y-%m-%dT%H:%M:%S%z')
+    if command -v python3 &>/dev/null; then
+        python3 - "$url" "$profile" "$dir" "$ts" "$STATE_FILE" <<'PYEOF'
+import sys, json
+data = {"url": sys.argv[1], "profile": sys.argv[2], "downloadDir": sys.argv[3], "status": "in_progress", "timestamp": sys.argv[4]}
+with open(sys.argv[5], 'w') as f: json.dump(data, f)
+PYEOF
+    else
+        local safe_url safe_profile safe_dir
+        safe_url=$(_json_escape "$url")
+        safe_profile=$(_json_escape "$profile")
+        safe_dir=$(_json_escape "$dir")
+        cat > "$STATE_FILE" <<EOF
+{"url":"${safe_url}","profile":"${safe_profile}","downloadDir":"${safe_dir}","status":"in_progress","timestamp":"${ts}"}
 EOF
+    fi
     log DEBUG "State saved"
 }
 
@@ -292,14 +324,16 @@ check_resume() {
     if command -v python3 &>/dev/null; then
         local ts stale
         ts=$(_json_field "$STATE_FILE" timestamp)
-        stale=$(python3 -c "
+        stale=$(python3 - "$ts" <<'PYEOF' 2>/dev/null || printf 'no'
+import sys
 from datetime import datetime, timezone, timedelta
 try:
-    ts = datetime.fromisoformat('$ts')
+    ts = datetime.fromisoformat(sys.argv[1])
     if ts.tzinfo is None: ts = ts.replace(tzinfo=timezone.utc)
     print('yes' if (datetime.now(timezone.utc)-ts) > timedelta(hours=2) else 'no')
 except: print('no')
-" 2>/dev/null || printf 'no')
+PYEOF
+)
         [[ "$stale" == "yes" ]] && { clear_state; return 0; }
     fi
 
